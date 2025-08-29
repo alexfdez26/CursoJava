@@ -21,14 +21,14 @@ pipeline {
         stage('🔧 Compilar proyecto') {
             steps {
                 echo '⚙️ Iniciando compilación con Gradle...'
-                sh './gradlew clean build -x test'
+                bat './gradlew clean build -x test'
             }
         }
 
         stage('🧪 Ejecutar pruebas') {
             steps {
                 echo '🧪 Corriendo pruebas unitarias...'
-                sh './gradlew test'
+                bat './gradlew test'
             }
             post {
                 always {
@@ -41,7 +41,7 @@ pipeline {
         stage('📦 Empaquetar aplicación') {
             steps {
                 echo '📦 Generando archivo JAR...'
-                sh './gradlew jar'
+                bat './gradlew jar'
                 archiveArtifacts artifacts: 'build/libs/*.jar', fingerprint: true
             }
         }
