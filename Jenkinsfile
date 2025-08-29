@@ -1,68 +1,60 @@
 pipeline {
     agent any
 
-    tools {
-        git 'Git_2.51' // Nombre exacto de la instalación de Git en Jenkins
-    }
-
-    environment {
-        JAVA_HOME = tool name: 'JDK_17', type: 'jdk'
-        PATH = "${JAVA_HOME}/bin:${env.PATH}"
-    }
-
     stages {
-        stage('📥 Clonar repositorio') {
+        stage('Preparar entorno') {
             steps {
-                echo '🔄 Clonando código desde GitHub...'
-                git branch: 'main', url: 'https://github.com/alexfdez26/CursoJava.git'
-            }
-        }
-
-        stage('🔧 Compilar proyecto') {
-            steps {
-                echo '⚙️ Iniciando compilación con Gradle...'
-                bat './gradlew clean build -x test'
-            }
-        }
-
-        stage('🧪 Ejecutar pruebas') {
-            steps {
-                echo '🧪 Corriendo pruebas unitarias...'
-                bat './gradlew test'
-            }
-            post {
-                always {
-                    echo '📊 Publicando resultados de pruebas...'
-                    junit 'build/test-results/test/*.xml'
+                echo '🔧 Preparando entorno de compilación...'
+                script {
+                    if (isUnix()) {
+                        sh 'chmod +x gradlew'
+                    } else {
+                        bat 'echo Preparando entorno en Windows...'
+                    }
                 }
             }
         }
 
-        stage('📦 Empaquetar aplicación') {
+        stage('Compilar proyecto') {
             steps {
-                echo '📦 Generando archivo JAR...'
-                bat './gradlew jar'
-                archiveArtifacts artifacts: 'build/libs/*.jar', fingerprint: true
+                echo '⚙️ Compilando proyecto con Gradle...'
+                script {
+                    if (isUnix()) {
+                        sh './gradlew clean build -x test'
+                    } else {
+                        bat 'gradlew.bat clean build -x test'
+                    }
+                }
             }
         }
 
-        stage('🚀 Despliegue simulado') {
+        stage('Ejecutar pruebas') {
             steps {
-                echo '🚀 Simulando despliegue de BibliotecaJava...'
-                // sh 'java -jar build/libs/BibliotecaJava.jar'
+                echo '🧪 Ejecutando pruebas unitarias...'
+                script {
+                    if (isUnix()) {
+                        sh './gradlew test'
+                    } else {
+                        bat 'gradlew.bat test'
+                    }
+                }
+            }
+        }
+
+        stage('Publicar artefactos') {
+            steps {
+                echo '📦 Publicando artefactos generados...'
+                archiveArtifacts artifacts: '**/build/libs/*.jar', fingerprint: true
             }
         }
     }
 
     post {
         success {
-            echo '✅ Pipeline ejecutado con éxito.'
-        }
-        unstable {
-            echo '⚠️ Pipeline finalizó con advertencias.'
+            echo '✅ Pipeline completado con éxito'
         }
         failure {
-            echo '❌ Algo falló en el pipeline.'
+            echo '❌ El pipeline ha fallado. Revisar logs.'
         }
     }
 }
