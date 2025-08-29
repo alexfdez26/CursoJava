@@ -2,31 +2,42 @@ pipeline {
     agent any
 
     environment {
-        JAVA_HOME = tool name: 'JDK_17', type: 'jdk' // Asegúrate de tener este JDK configurado en Jenkins
+        JAVA_HOME = tool name: 'JDK_17', type: 'jdk'
         PATH = "${JAVA_HOME}/bin:${env.PATH}"
     }
 
     stages {
         stage('📥 Clonar repositorio') {
             steps {
-                git 'https://github.com/tu-usuario/BibliotecaJava.git'
+                echo '🔄 Clonando código desde GitHub...'
+                git branch: 'main', url: 'https://github.com/alexfdez26/CursoJava.git'
             }
+        }
         }
 
         stage('🔧 Compilar proyecto') {
             steps {
-                sh './gradlew clean build'
+                echo '⚙️ Iniciando compilación con Gradle...'
+                sh './gradlew clean build -x test'
             }
         }
 
         stage('🧪 Ejecutar pruebas') {
             steps {
+                echo '🧪 Corriendo pruebas unitarias...'
                 sh './gradlew test'
+            }
+            post {
+                always {
+                    echo '📊 Publicando resultados de pruebas...'
+                    junit 'build/test-results/test/*.xml'
+                }
             }
         }
 
         stage('📦 Empaquetar aplicación') {
             steps {
+                echo '📦 Generando archivo JAR...'
                 sh './gradlew jar'
                 archiveArtifacts artifacts: 'build/libs/*.jar', fingerprint: true
             }
@@ -34,9 +45,9 @@ pipeline {
 
         stage('🚀 Despliegue simulado') {
             steps {
-                echo 'Desplegando la aplicación BibliotecaJava...'
-                // Aquí podrías copiar el .jar a un servidor o ejecutar el programa
-                // Ejemplo: sh 'java -jar build/libs/BibliotecaJava.jar'
+                echo '🚀 Simulando despliegue de BibliotecaJava...'
+                // Ejemplo real:
+                // sh 'java -jar build/libs/BibliotecaJava.jar'
             }
         }
     }
@@ -44,6 +55,9 @@ pipeline {
     post {
         success {
             echo '✅ Pipeline ejecutado con éxito.'
+        }
+        unstable {
+            echo '⚠️ Pipeline finalizó con advertencias.'
         }
         failure {
             echo '❌ Algo falló en el pipeline.'
