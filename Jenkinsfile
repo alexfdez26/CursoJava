@@ -1,6 +1,10 @@
 pipeline {
     agent any
 
+    tools {
+        git 'Git_2.51' // Nombre exacto de la instalación de Git en Jenkins
+    }
+
     environment {
         JAVA_HOME = tool name: 'JDK_17', type: 'jdk'
         PATH = "${JAVA_HOME}/bin:${env.PATH}"
@@ -45,7 +49,6 @@ pipeline {
         stage('🚀 Despliegue simulado') {
             steps {
                 echo '🚀 Simulando despliegue de BibliotecaJava...'
-                // Ejemplo real:
                 // sh 'java -jar build/libs/BibliotecaJava.jar'
             }
         }
