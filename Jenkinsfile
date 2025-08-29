@@ -13,7 +13,6 @@ pipeline {
                 git branch: 'main', url: 'https://github.com/alexfdez26/CursoJava.git'
             }
         }
-        }
 
         stage('🔧 Compilar proyecto') {
             steps {
