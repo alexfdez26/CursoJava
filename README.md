@@ -39,7 +39,7 @@ Punto de entrada del programa. Crea instancias de `Libro` y `Persona` para proba
 
 1. Clona el repositorio:
    ```bash
-   git clone https://github.com/tu-usuario/BibliotecaJava.git
+   git clone https://github.com/alexfdez26/CursoJava.git
 
 2. Abre el proyecto en tu IDE favorito.
 
