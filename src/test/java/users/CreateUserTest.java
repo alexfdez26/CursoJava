@@ -18,7 +18,6 @@ public class CreateUserTest {
 
     @Test
     public void createUser_shouldReturnCreatedUser() {
-        // Leer la URL base desde serenity.conf
         String baseUrl = EnvironmentSpecificConfiguration
                 .from(environmentVariables)
                 .getProperty("serenity.rest.base.url");
@@ -30,7 +29,7 @@ public class CreateUserTest {
 
         Usuario creado = SerenityRest
                 .given()
-                .baseUri(baseUrl) // Usar la URL base configurada
+                .baseUri(baseUrl)
                 .contentType("application/json")
                 .body(nuevo)
                 .when()
