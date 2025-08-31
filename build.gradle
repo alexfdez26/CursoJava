@@ -1,17 +1,30 @@
 plugins {
     id 'java'
-    id 'application'
+    id 'net.serenity-bdd.serenity-gradle-plugin' version '3.9.8'
 }
 
 repositories {
     mavenCentral()
 }
 
-application {
-    mainClass = 'Main' // o el paquete completo si usas uno, ej: 'com.curso.Main'
+ext {
+    serenityVersion = '3.9.8'
+    junitVersion = '4.13.2'
 }
 
-java {
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
+dependencies {
+    testImplementation "net.serenity-bdd:serenity-core:${serenityVersion}"
+    testImplementation "net.serenity-bdd:serenity-junit:${serenityVersion}"
+    testImplementation "junit:junit:${junitVersion}"
+    testImplementation "net.serenity-bdd:serenity-rest-assured:${serenityVersion}"
+
 }
+
+test {
+    useJUnit() // Fuerza JUnit 4
+    testLogging.showStandardStreams = true
+}
+
+
+
+test.finalizedBy(aggregate)
