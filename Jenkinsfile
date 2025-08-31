@@ -1,12 +1,7 @@
 pipeline {
     agent any
 
-    tools {
-        git 'Default'
-        jdk 'JDK17'
-    }
-
-    stages {
+      stages {
         stage('Checkout código') {
             steps {
                 echo '📥 Clonando repositorio CursoJava...'
