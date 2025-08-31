@@ -1,15 +1,42 @@
 pipeline {
     agent any
 
+    tools {
+        git 'Default'
+        jdk 'JDK17'
+    }
+
     stages {
-        stage('Preparar entorno') {
+        stage('Checkout código') {
             steps {
-                echo '🔧 Preparando entorno de compilación...'
+                echo '📥 Clonando repositorio CursoJava...'
+                checkout([
+                    $class: 'GitSCM',
+                    branches: [[name: '*/main']], // Cambia a '*/master' si tu rama principal es master
+                    userRemoteConfigs: [[
+                        url: 'https://github.com/alexfdez26/CursoJava.git'
+                    ]]
+                ])
+            }
+        }
+
+        stage('Validar Gradle Wrapper') {
+            steps {
+                echo '🔍 Verificando gradlew...'
                 script {
                     if (isUnix()) {
-                        sh 'chmod +x gradlew'
+                        if (!fileExists('gradlew')) {
+                            error '❌ No se encontró gradlew. Ejecuta: gradle wrapper'
+                        } else {
+                            sh 'chmod +x gradlew'
+                            echo '✅ gradlew encontrado y permisos ajustados.'
+                        }
                     } else {
-                        bat 'echo Preparando entorno en Windows...'
+                        if (!fileExists('gradlew.bat')) {
+                            error '❌ No se encontró gradlew.bat. Ejecuta: gradle wrapper'
+                        } else {
+                            echo '✅ gradlew.bat encontrado.'
+                        }
                     }
                 }
             }
@@ -17,33 +44,47 @@ pipeline {
 
         stage('Compilar proyecto') {
             steps {
-                echo '⚙️ Compilando proyecto con Gradle...'
+                echo '⚙️ Compilando proyecto...'
                 script {
                     if (isUnix()) {
                         sh './gradlew clean build -x test'
                     } else {
-                        bat 'gradlew.bat clean build -x test'
+                        bat '.\\gradlew.bat clean build -x test'
                     }
                 }
             }
         }
 
-        stage('Ejecutar pruebas') {
+        stage('Ejecutar pruebas Serenity') {
             steps {
-                echo '🧪 Ejecutando pruebas unitarias...'
+                echo '🧪 Ejecutando pruebas automatizadas...'
                 script {
                     if (isUnix()) {
-                        sh './gradlew test'
+                        sh './gradlew clean test aggregate'
                     } else {
-                        bat 'gradlew.bat test'
+                        bat '.\\gradlew.bat clean test aggregate'
                     }
                 }
+            }
+        }
+
+        stage('Publicar Reporte Serenity') {
+            steps {
+                echo '📊 Publicando reporte Serenity...'
+                publishHTML([
+                    allowMissing: false,
+                    alwaysLinkToLastBuild: true,
+                    keepAll: true,
+                    reportDir: 'build/serenity', // Ajusta si tu ruta es distinta
+                    reportFiles: 'index.html',
+                    reportName: 'Reporte Serenity'
+                ])
             }
         }
 
         stage('Publicar artefactos') {
             steps {
-                echo '📦 Publicando artefactos generados...'
+                echo '📦 Archivando artefactos...'
                 archiveArtifacts artifacts: '**/build/libs/*.jar', fingerprint: true
             }
         }
@@ -54,7 +95,7 @@ pipeline {
             echo '✅ Pipeline completado con éxito'
         }
         failure {
-            echo '❌ El pipeline ha fallado. Revisar logs.'
+            echo '❌ El pipeline ha fallado. Revisar logs y reporte Serenity.'
         }
     }
 }
