@@ -8,7 +8,7 @@ public class BaseTest {
     protected RequestSpecification givenBase() {
         return SerenityRest
                 .given()
-                .contentType("application/json")
-                .baseUri(System.getProperty("serenity.rest.base.url"));
+                .contentType("application/json");
+
     }
 }
