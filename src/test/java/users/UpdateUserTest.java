@@ -3,34 +3,42 @@ package users;
 import models.Usuario;
 import net.serenitybdd.junit.runners.SerenityRunner;
 import net.serenitybdd.rest.SerenityRest;
+import net.serenitybdd.core.environment.EnvironmentSpecificConfiguration;
+import net.thucydides.core.util.EnvironmentVariables;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.equalTo;
 
 @RunWith(SerenityRunner.class)
 public class UpdateUserTest {
 
+    private EnvironmentVariables environmentVariables;
+
     @Test
     public void updateUser_shouldReturnUpdatedUser() {
-        Usuario update = new Usuario();
-        update.setId(1);
-        update.setName("Alex Updated");
-        update.setUsername("alexupdated");
-        update.setEmail("alex.updated@example.com");
+        String baseUrl = EnvironmentSpecificConfiguration
+                .from(environmentVariables)
+                .getProperty("serenity.rest.base.url");
 
-        Usuario actualizado = SerenityRest
+        Usuario actualizado = new Usuario();
+        actualizado.setName("Alex Updated");
+        actualizado.setUsername("alexupdated");
+        actualizado.setEmail("alex.updated@example.com");
+
+        Usuario respuesta = SerenityRest
                 .given()
+                .baseUri(baseUrl)
                 .contentType("application/json")
-                .body(update)
+                .body(actualizado)
                 .when()
-                .put("users/1")
+                .put("/users/1")
                 .then()
                 .statusCode(200)
                 .extract()
                 .as(Usuario.class);
 
-        assertThat(actualizado.getName(), equalTo(update.getName()));
+        assertThat(respuesta.getName(), equalTo(actualizado.getName()));
     }
 }
